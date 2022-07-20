@@ -6,6 +6,7 @@ from sqlalchemy.exc import DataError
 from app import db, bcrypt
 from journalist.models import JournalistNewsMapping, News, NewsCategory
 from users.models import User
+from users.utils import send_reset_email
 from users.validations import validate_name, validate_email, validate_password
 
 
@@ -182,3 +183,64 @@ class ShowArticles(Resource):
                 "message": "Articles fetched successfully",
                 "status": "true"
                 }, status.HTTP_200_OK
+
+
+class ResetPasswordRequest(Resource):
+    """class for getting the home page if user is already logged in and posting the data"""
+
+    def post(self):
+        """method for checking if the email is valid """
+        reset_request_json = request.get_json()
+        try:
+            user = User.query.filter_by(email=reset_request_json["email"]).first()
+            if user:
+                token = send_reset_email(user)
+                return {"data": token,
+                        "message": "An email has been sent to your id please check it to reset your password.",
+                        "status": "true"
+                        }, status.HTTP_200_OK
+            return {"data": [],
+                    "message": "Invalid email id. Please enter valid email.",
+                    "status": "false"
+                    }, status.HTTP_404_NOT_FOUND
+
+        except KeyError as err:
+            return {"data": [],
+                    "message": "Enter proper data",
+                    "status": "False"
+                    }, status.HTTP_400_BAD_REQUEST
+
+
+class ResetPassword(Resource):
+    """class for getting the home page if the user is already logged in and posting the data of the user after the
+     password reset"""
+
+    def post(self):
+        """method for verifying the token to reset the password and creating new password for the user"""
+        reset_password_json = request.get_json()
+
+        try:
+            user = User.verify_reset_token(reset_password_json["token"])
+            if user is None:
+                return {"data": [],
+                        "message": "That is an invalid or expired token",
+                        "status": "false"
+                        }, status.HTTP_400_BAD_REQUEST
+            if not validate_password(reset_password_json["password"]):
+                return {"data": [],
+                        "message": "Please enter proper password",
+                        "status": "false"
+                        }, status.HTTP_400_BAD_REQUEST
+            hashed_password = bcrypt.generate_password_hash(reset_password_json["password"]).decode('utf-8')
+            user.password = hashed_password
+            db.session.commit()
+            return {"data": [],
+                    "message": "Your password has been updated! You can now log in",
+                    "status": "true"
+                    }, status.HTTP_200_OK
+
+        except KeyError as err:
+            return {"data": [],
+                    "message": "Enter proper data",
+                    "status": "false"
+                    }, status.HTTP_400_BAD_REQUEST

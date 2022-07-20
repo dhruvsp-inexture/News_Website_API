@@ -1,4 +1,6 @@
+from flask import current_app
 from app import db
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 
 class UserType(db.Model):
@@ -21,6 +23,44 @@ class User(db.Model):
     password = db.Column(db.String, nullable=False)
     has_premium = db.Column(db.Boolean, default=False, nullable=False)
     user_type_id = db.Column(db.Integer, db.ForeignKey('user_type.user_type_id'))
+
+    def get_reset_token(self, expires_sec=1800):
+        """function to get the reset token which will expire in 30 minutes
+
+        Parameters
+        ----------
+        expires_sec: int
+            time to expire the token in seconds
+
+        Returns
+        -------
+        string
+            contains the token by converting json to string
+        """
+
+        serializer = Serializer(current_app.config['SECRET_KEY'], expires_sec)
+        return serializer.dumps({'user_id': self.id}).decode('utf-8')
+
+    @staticmethod
+    def verify_reset_token(token):
+        """function for verifying the reset token
+
+        Parameters
+        ----------
+        token: str
+            token which is generated while requesting reset password is loaded here
+        Returns
+        -------
+        object
+            contains the user object from given user_id
+        """
+
+        serializer = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            user_id = serializer.loads(token)['user_id']
+        except (KeyError, Exception):
+            return None
+        return User.query.get(user_id)
 
     def save_to_db(self) -> "User":
         db.session.add(self)

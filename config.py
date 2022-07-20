@@ -14,3 +14,4 @@ class Config:
     API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
 
 
+
