@@ -1,6 +1,6 @@
 import cloudinary
 import datetime
-from flask import request
+from flask import request, jsonify
 from flask_api import status
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful import Resource
@@ -55,13 +55,10 @@ class ShowMyArticles(Resource):
         for journalist in journalist_mapping_obj:
             news = News.query.filter_by(news_id=journalist.news_id).first()
             news_obj_news_id = news.news_id
-            news_data[news_obj_news_id] = {}
-            news_data[news_obj_news_id]["news_heading"] = news.news_heading
-            news_data[news_obj_news_id]["news_info"] = news.news_info
-            news_data[news_obj_news_id]["date"] = news.news_date
-            news_data[news_obj_news_id]["checked"] = news.checked
-            news_data[news_obj_news_id]["is_approved"] = news.is_approved
-            news_data[news_obj_news_id]["image"] = news.image
+            news_data[news_obj_news_id] = {"news_heading": news.news_heading, "news_info": news.news_info,
+                                           "date": news.news_date, "checked": news.checked,
+                                           "is_approved": news.is_approved, "image": news.image}
+
             news_category = NewsCategory.query.filter_by(category_id=news.news_category_id).first()
             news_data[news_obj_news_id]["category"] = news_category.category
         return {"data": news_data,
@@ -91,7 +88,7 @@ class UpdateArticle(Resource):
                         }, status.HTTP_404_NOT_FOUND
             news_obj.news_heading = update_article_data["news_heading"]
             news_obj.news_info = update_article_data["news_info"]
-            news_obj.news_date = datetime.datetime.today()
+            news_obj.news_date = datetime.datetime.now()
             db.session.commit()
             return {"data": [],
                     "message": "Article updated successfully",

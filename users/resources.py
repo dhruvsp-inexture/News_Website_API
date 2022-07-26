@@ -207,7 +207,7 @@ class ResetPasswordRequest(Resource):
         except KeyError as err:
             return {"data": [],
                     "message": "Enter proper data",
-                    "status": "False"
+                    "status": "false"
                     }, status.HTTP_400_BAD_REQUEST
 
 

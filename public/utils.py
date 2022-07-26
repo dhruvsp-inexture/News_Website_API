@@ -15,7 +15,7 @@ def user_required():
             if user.user_type_id == 3:
                 return fn(*args, **kwargs)
             else:
-                return jsonify(data=[], msg="Users only!", status="false"), status.HTTP_403_FORBIDDEN
+                return jsonify(data=[], msg="Public only!", status="false"), status.HTTP_403_FORBIDDEN
 
         return decorator
 

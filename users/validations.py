@@ -8,12 +8,6 @@ def validate_name(name):
     else:
         return False
 
-
-# function for validating mobile number.
-def validate_mobile_number(num):
-    return re.fullmatch('[6-9][0-9]{9}', num)
-
-
 # function for validating email id.
 def validate_email(email):
     return re.fullmatch(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email)

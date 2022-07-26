@@ -12,6 +12,11 @@ class UserType(db.Model):
     # type_of_user = db.relationship('User', backref='usertype', lazy=True)
     # journalist_news = db.relationship('JournalistNewsMapping', backref='journalistnews', lazy=True)
 
+    def save_to_db(self) -> "UserType":
+        db.session.add(self)
+        db.session.commit()
+        return self
+
 
 class User(db.Model):
     """model for storing user information and user id"""
